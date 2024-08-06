@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:bennett_cal/home.dart';
+import 'package:sizer/sizer.dart';
 
 void main() {
   runApp(const MyApp(
@@ -13,12 +13,14 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-          // Your theme settings
-          ),
-      home: HomePage(),
-    );
+    return Sizer(builder: (context, orientation, deviceType) {
+      return MaterialApp(
+        title: 'Flutter Demo',
+        theme: ThemeData(
+            // Your theme settings
+            ),
+        home: HomePage(),
+      );
+    });
   }
 }
