@@ -36,6 +36,7 @@ dependencies:
   dio:
   file_picker:
   path:
+  oktoast: 
   animated_custom_dropdown: 
   sizer:
 
