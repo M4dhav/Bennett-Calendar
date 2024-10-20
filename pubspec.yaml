@@ -31,7 +31,7 @@ dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: 
-  googleapis_auth: 
+  extension_google_sign_in_as_googleapis_auth: ^2.0.12
   google_sign_in: 
   dio:
   file_picker:
@@ -39,7 +39,7 @@ dependencies:
   oktoast: 
   animated_custom_dropdown: 
   sizer:
-
+  googleapis:
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.

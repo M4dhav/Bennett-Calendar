@@ -1,12 +1,18 @@
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
+import 'dart:isolate';
 import 'dart:typed_data';
 import 'package:animated_custom_dropdown/custom_dropdown.dart';
+import 'package:bennett_cal/calendar_controller.dart';
 import 'package:dio/dio.dart';
+import 'package:extension_google_sign_in_as_googleapis_auth/extension_google_sign_in_as_googleapis_auth.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:googleapis/calendar/v3.dart' as cal;
 import 'package:sizer/sizer.dart';
 import 'package:oktoast/oktoast.dart';
 
@@ -18,6 +24,8 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  double progValue = 0.0;
+  List<Map<String, String>> eventData = [];
   final SingleSelectController<String?> splController =
       SingleSelectController("Please Select a Specialisation");
   final SingleSelectController<String?> electiveController =
@@ -103,12 +111,15 @@ class _HomePageState extends State<HomePage> {
         'https://bennett-calendar-backend.onrender.com/upload',
         data: formData,
       );
-      // print(response.data);
-
       if (response.statusCode == 200) {
         Map<String, dynamic> jsonData = jsonDecode(response.data);
-
-        print(jsonData['rooms']);
+        eventData.clear();
+        for (var event in jsonData['class']) {
+          Map<String, String> eventMap = Map.from(event);
+          eventData.add(eventMap);
+        }
+        setState(() {});
+        print(eventData);
       } else {
         print('Upload failed: ${response.statusCode}');
       }
@@ -118,26 +129,56 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  Future<void> googleSignInFunc() async {
+    GoogleSignIn googleSignIn = GoogleSignIn(
+      clientId:
+          '547194397495-acus6c61hpgu76gtnin58j9tafoit5gm.apps.googleusercontent.com',
+      scopes: [
+        'https://www.googleapis.com/auth/calendar',
+      ],
+    );
+
+    try {
+      await googleSignIn.signInSilently();
+      final client = await googleSignIn.authenticatedClient();
+      if (client != null) {
+        CalendarClient.calendar = cal.CalendarApi(client);
+        log('Signed in');
+      }
+    } on PlatformException catch (e) {
+      debugPrint(e.message);
+    }
+  }
+
+  Future<void> updateProgress() async {
+    setState(() {
+      progValue += 100 / eventData.length;
+    });
+  }
+
+  Future<void> addEvents() async {
+    CalendarClient client = CalendarClient();
+    final String calId = await client.createCalendar();
+    for (Map<String, String> event in eventData) {
+      await client.insert(
+          title: event['name']!,
+          description: event['course']!,
+          location: event['room']!,
+          startTime: DateTime(
+              2024, 8, int.parse(event['day']!), int.parse(event['time']!), 30),
+          endTime: DateTime(2024, 8, int.parse(event['day']!),
+              int.parse(event['time']!) + 1, 30),
+          calendarId: calId);
+      await updateProgress();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(
           title: const Text('Bennett Calendar', style: TextStyle(fontSize: 16)),
-          actions: [
-            ElevatedButton(
-              onPressed: () async {
-                final GoogleSignInAccount? account =
-                    await GoogleSignIn().signIn();
-                if (account != null) {
-                  print('Signed in as ${account.email}');
-                } else {
-                  print('Sign-in cancelled');
-                }
-              },
-              child: const Text('Sign in with Google'),
-            ),
-          ],
         ),
         body: Center(
           child: Column(
@@ -179,9 +220,21 @@ class _HomePageState extends State<HomePage> {
               ElevatedButton(
                 onPressed: () async {
                   await uploadFile();
+                  await googleSignInFunc();
+                  await addEvents();
+                  showToast('Events added to calendar');
                 },
                 child: const Text('Upload File'),
               ),
+              SizedBox(
+                width: 70.w,
+                child: LinearProgressIndicator(
+                  borderRadius: BorderRadius.circular(10),
+                  minHeight: 5.h,
+                  value: progValue,
+                  color: Colors.blue,
+                ),
+              )
             ],
           ),
         ),

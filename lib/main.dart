@@ -17,7 +17,7 @@ class MyApp extends StatelessWidget {
     return Sizer(builder: (context, orientation, deviceType) {
       return OKToast(
         child: MaterialApp(
-          title: 'Flutter Demo',
+          title: 'ScheduleSyncBU',
           theme: ThemeData(
               // Your theme settings
               ),
