@@ -137,9 +137,8 @@ class _HomePageState extends State<HomePage> {
         'https://www.googleapis.com/auth/calendar',
       ],
     );
-
     try {
-      await googleSignIn.signInSilently();
+      await googleSignIn.signIn();
       final client = await googleSignIn.authenticatedClient();
       if (client != null) {
         CalendarClient.calendar = cal.CalendarApi(client);
