@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:bennett_cal/home.dart';
 import 'package:sizer/sizer.dart';
+import 'package:oktoast/oktoast.dart';
 
 void main() {
   runApp(const MyApp(
@@ -14,12 +15,14 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Sizer(builder: (context, orientation, deviceType) {
-      return MaterialApp(
-        title: 'Flutter Demo',
-        theme: ThemeData(
-            // Your theme settings
-            ),
-        home: HomePage(),
+      return OKToast(
+        child: MaterialApp(
+          title: 'Flutter Demo',
+          theme: ThemeData(
+              // Your theme settings
+              ),
+          home: HomePage(),
+        ),
       );
     });
   }
